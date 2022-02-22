@@ -24,9 +24,9 @@ library("kableExtra")
 
 # Connect
 library(rsconnect)
-rsconnect::setAccountInfo(name='davidsegovia123',
-                          token='7E3F32AEAA1425661EAC1C87E870A16A',
-                          secret='oZCK4PLIQ8nt81C2LSmCgJGjMAeCg6bTuu2i0zGH')
+rsconnect::setAccountInfo(name=
+                          token=
+                          secret=)
 
 
 library(here)

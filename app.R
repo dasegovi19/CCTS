@@ -1,13 +1,13 @@
 source("reference.R")
 
 
-ui <- dashboardPage(
+ui <-  dashboardPage(
   skin = "blue",
   dashboardHeader(title = "UIC's Center for Clinical and Translational Sciences (CCTS) recruitment and retention resource page",
                   titleWidth = 1200),  # close header
   
   dashboardSidebar(
-    width = 225,
+    width = 250,
     sidebarMenu(
       menuItem("Maps/Tables", tabName = "map_tab", icon = icon("map")),
       menuItem("Breakdown of Chicago", tabName = "table_tab1", icon = icon("tablet")),
@@ -45,14 +45,10 @@ ui <- dashboardPage(
         
         fluidRow(
           box(
-            title = "Data Source: American Community Survey 5 year estimates 2015-2019, 
-            diversitydatakids.org",
-            footer = "Note: The Child Opportunity Index is a composite index that captures neighborhood resources and conditions based on 29 indicators that are relevant for a child's healthy development scored as Very Low(5), Low(4), Moderate(3), 
-            High(2), and Very High(1). The 29 indicators are based on 3 domains: health and environment, education, and social and economic.",
-            
+            title = "Data Sources: (1) American Community Survey 5 year estimates 2015-2019, 
+            (2) diversitydatakids.org",
             status = "primary",
             width = 3,
-            height = 10,
             selectInput(
               inputId = "choices2",
               label = "Select indicator",
@@ -60,8 +56,7 @@ ui <- dashboardPage(
               selected = NULL),# close input
           ),# close box
           box(
-            title = "This map allows you to select the social determinants of health and age groups in each community area. 
-            Keep in mind that values are percentage(%) here except for the Child Opportunity Index (index score from 1-5).",
+            title = "This map allows you to select the social determinants of health and age groups in each community area.",
             width = 9,
             tmapOutput("healthmap")
           )#close 2nd box
@@ -87,12 +82,12 @@ ui <- dashboardPage(
           ) # close 2nd box
         ), # close 2nd fluid row
         
-       
-    
+        
+        
       ),# close map tab
       
       
-     
+      
       
       
       ## start census tab
@@ -126,24 +121,24 @@ ui <- dashboardPage(
         titlePanel(" This bargraph breaks down the Asian American community in Chicago into selected groups. Check out the table below, which also includes the margin of error."),
         
         ### bargraph
-          fluidRow(
-            box(
-              title = "Asian Breakdown into selected groups",
-              width = 12,
-              plotOutput("bargraph")
-            ) # close box
-          ), # close fluid row
-          
+        fluidRow(
+          box(
+            title = "Asian Breakdown into selected groups",
+            width = 12,
+            plotOutput("bargraph")
+          ) # close box
+        ), # close fluid row
+        
         ###
         ## table
         fluidRow(
           box(
-            title = "Data source: ACS Community Survey 2015-2019",
+            title = "Data source: American Community Survey 2015-2019",
             status = "primary",
             width = 3,
           ), # close 1st box
           box(
-            title = "Data source: ACS Community Survey 2015-2019 ",
+            title = "Data source: American Community Survey 2015-2019 ",
             width = 20,
             tableOutput("asiantable")
           ) # close 2nd box
@@ -173,7 +168,7 @@ ui <- dashboardPage(
             width = 3,
           ), # close 1st box
           box(
-            title = "Data source: ACS Community Survey 2015-2019",
+            title = "Data source: American Community Survey 2015-2019",
             width = 20,
             tableOutput("nativeamericantable")
           ) # close 2nd box
@@ -182,7 +177,7 @@ ui <- dashboardPage(
       ), # close table3 tab     
       
       
-  
+      
       
       tabItem(
         tabName = "source_tab",
@@ -190,19 +185,19 @@ ui <- dashboardPage(
         
         
         p(tags$a(href="https://www.chicagohealthatlas.org/", 
-               " Chicago Health Atlas")), 
+                 " Chicago Health Atlas")), 
         
         p(tags$a(href="https://www.census.gov/programs-surveys/acs/", 
-               "American Community Survey 5 year estimates 2015-2019")), 
+                 "American Community Survey 5 year estimates 2015-2019")), 
         
         p(tags$a(href="https://www.diversitydatakids.org/", 
-               "Diversity Data Kids: Child Opportunity Index")),
+                 "Diversity Data Kids: Child Opportunity Index")),
         
         p(tags$a(href="https://www.census.gov/programs-surveys/decennial-census/decade/2020/2020-census-main.html", 
                  "2020 U.S. Census"))
-     
         
-    
+        
+        
       )
     ) # closes tab Items
   ) # closes dashboard Body
@@ -216,23 +211,47 @@ server <- function(input, output, session) {
   
   
   
-  
   ### 1st map
   output$demographicmap <- renderTmap({
     tm_shape(chicagomap) +
-      tm_polygons(choices[1], zindex = 401, title = "Total Population #")
+      tm_polygons(choices[1], zindex = 401)
   })
   
   observe({
-    choices <- input$choices
     tmapProxy("demographicmap", session, {
-      tm_remove_layer(401) +
+      if(input$choices == "HispanicOrLatino_Population")
+        tm_remove_layer(401) +
         tm_shape(chicagomap) +
-        tm_polygons(choices, id= "Name", zindex = 401, title = "Total Population #")
+        tm_polygons(col = "HispanicOrLatino_Population", id= "Name", zindex = 401, title = "Total Hispanic/Latino Population", popup.vars = c("Total # of Hispanics/Latinos: " = "HispanicOrLatino_Population"))
+      
+      
+      else if(input$choices == "Black_Population") {
+        tm_remove_layer(401) +
+          tm_shape(chicagomap) +
+          tm_polygons(col = "Black_Population", id= "Name", zindex = 401, title = "Total African American Population", popup.vars = c("Total # of African Americans: " = "Black_Population"))
+        
+      }
+      
+      else if(input$choices == "Asian_Population") {
+        tm_remove_layer(401) +
+          tm_shape(chicagomap) +
+          tm_polygons(col = "Asian_Population", id= "Name", zindex = 401, title = "Total Asian Population", popup.vars = c("Total # of Asian Americans: " = "Asian_Population"))
+        
+      }
+      
+      
+      else if(input$choices == "NativeAmerican_Population") {
+        tm_remove_layer(401) +
+          tm_shape(chicagomap) +
+          tm_polygons(col = "NativeAmerican_Population", id= "Name", zindex = 401, title = "Total Native American Population", popup.vars = c("Total # of Native Americans: " = "NativeAmerican_Population"))
+        
+      }
+      
     })
   })
   
-  ## 2nd map
+  
+  
   
   output$healthmap <- renderTmap({
     tm_shape(chicagomap) +
@@ -240,13 +259,170 @@ server <- function(input, output, session) {
   })
   
   observe({
-    choices2 <- input$choices2
     tmapProxy("healthmap", session, {
-      tm_remove_layer(401) +
-        tm_shape(chicagomap) +
-        tm_polygons(choices2, id="Name", zindex = 401, title = "")
+      if(input$choices2 == "ForeignBorn_percent") {
+        tm_remove_layer(401) + 
+          tm_shape(chicagomap) + 
+          tm_polygons(col = "ForeignBorn_percent", id = "Name", zindex = 401, title = "% of residents who were not U.S. citizens at the time of birth (includes both naturalized citizens and those who are not currently citizens)", popup.vars = c( "% that are Foreign Born: " = "ForeignBorn_percent"),
+                      legend.format=list(fun=function(x) paste0(formatC(x, digits=0, format="f"), " %"))) + 
+          tm_layout(legend.format = list(fun = function(x) { paste0(formatC(x, digits = 0, format = "f"), "%") })) 
+        
+        
+        
+        
+        
+      } else if(input$choices2 == "LimitedEnglishProfiency_Percent")  {
+        
+        tm_remove_layer(401) + 
+          tm_shape(chicagomap) + 
+          tm_polygons(col = "LimitedEnglishProfiency_Percent", id = "Name", zindex = 401, title = "% of residents 5 years and older who do not speak English 'very well'", popup.vars = c( "% that have limited English Proficiency: " = "LimitedEnglishProfiency_Percent"),
+                      legend.format=list(fun=function(x) paste0(formatC(x, digits=0, format="f"), " %"))) + 
+          tm_layout(legend.format = list(fun = function(x) { paste0(formatC(x, digits = 0, format = "f"), "%") })) 
+        
+        
+        
+      }
+      
+      else if(input$choices2 == "PovertyRate_Percent")  {
+        
+        tm_remove_layer(401) + 
+          tm_shape(chicagomap) + 
+          tm_polygons(col = "PovertyRate_Percent", id = "Name", zindex = 401, title = "% of residents in families below the Federal Poverty Level", popup.vars = c( "% of residents in poverty: " = "PovertyRate_Percent"),
+                      legend.format=list(fun=function(x) paste0(formatC(x, digits=0, format="f"), " %"))) + 
+          tm_layout(legend.format = list(fun = function(x) { paste0(formatC(x, digits = 0, format = "f"), "%") })) 
+        
+        
+        
+      }
+      
+      else if(input$choices2 == "UnemploymentRate_Percent")  {
+        
+        tm_remove_layer(401) + 
+          tm_shape(chicagomap) + 
+          tm_polygons(col = "UnemploymentRate_Percent", id = "Name", zindex = 401, title = "% of residents in 16+ actively seeking employment", popup.vars = c( "% of residents unemployed: " = "UnemploymentRate_Percent"),
+                      legend.format=list(fun=function(x) paste0(formatC(x, digits=0, format="f"), " %"))) + 
+          tm_layout(legend.format = list(fun = function(x) { paste0(formatC(x, digits = 0, format = "f"), "%") })) 
+        
+        
+        
+      }
+      
+      else if(input$choices2 == "FoodStamps_Percent")  {
+        
+        tm_remove_layer(401) + 
+          tm_shape(chicagomap) + 
+          tm_polygons(col = "FoodStamps_Percent", id = "Name", zindex = 401, title = "% of households actively receiving Supplemental Nutrition Assistance Program (SNAP) benefits over the past 12 months ", popup.vars = c( "% of households with Food Stamps: " = "FoodStamps_Percent"),
+                      legend.format=list(fun=function(x) paste0(formatC(x, digits=0, format="f"), " %"))) + 
+          tm_layout(legend.format = list(fun = function(x) { paste0(formatC(x, digits = 0, format = "f"), "%") })) 
+        
+        
+        
+      }
+      
+      else if(input$choices2 == "SeverelyRentBurdened_Percent")  {
+        
+        tm_remove_layer(401) + 
+          tm_shape(chicagomap) + 
+          tm_polygons(col = "SeverelyRentBurdened_Percent", id = "Name", zindex = 401, title = "% of Households spending more than 50% of income on rent ", popup.vars = c( "% of renter-occupied housing units: " = "SeverelyRentBurdened_Percent"),
+                      legend.format=list(fun=function(x) paste0(formatC(x, digits=0, format="f"), " %"))) + 
+          tm_layout(legend.format = list(fun = function(x) { paste0(formatC(x, digits = 0, format = "f"), "%") })) 
+        
+        
+        
+      }
+      
+      else if(input$choices2 == "UninsuredRate_Percent")  {
+        
+        tm_remove_layer(401) + 
+          tm_shape(chicagomap) + 
+          tm_polygons(col = "UninsuredRate_Percent", id = "Name", zindex = 401, title = "% of residents without health insurance ", popup.vars = c( "% of residents without health insurance: " = "UninsuredRate_Percent"),
+                      legend.format=list(fun=function(x) paste0(formatC(x, digits=0, format="f"), " %"))) + 
+          tm_layout(legend.format = list(fun = function(x) { paste0(formatC(x, digits = 0, format = "f"), "%") })) 
+        
+        
+        
+      }
+      
+      else if(input$choices2 == "Child_Opportunity_Index2.0")  {
+        
+        tm_remove_layer(401) + 
+          tm_shape(chicagomap) + 
+          tm_polygons(col = "Child_Opportunity_Index2.0", id = "Name", zindex = 401, title = "A composite index score  that measures neighborhood resources and conditions that are important for children's healthy development: scored as Very Low (5), Low (4), Moderate (3), High (2), and Very High (1) ", 
+                      popup.vars = c( "Composite index score: " = "Child_Opportunity_Index2.0"))
+        
+        
+        
+      }
+      
+      else if(input$choices2 == "Infants_0_4Years_Percent")  {
+        
+        tm_remove_layer(401) + 
+          tm_shape(chicagomap) + 
+          tm_polygons(col = "Infants_0_4Years_Percent", id = "Name", zindex = 401, title = "% of residents that are infants(between 0-4 years)", popup.vars = c( "% that are infants: " = "Infants_0_4Years_Percent"),
+                      legend.format=list(fun=function(x) paste0(formatC(x, digits=0, format="f"), " %"))) + 
+          tm_layout(legend.format = list(fun = function(x) { paste0(formatC(x, digits = 0, format = "f"), "%") })) 
+        
+        
+        
+      }
+      
+      else if(input$choices2 == "Juveniles_5_17Years_Percent")  {
+        
+        tm_remove_layer(401) + 
+          tm_shape(chicagomap) + 
+          tm_polygons(col = "Juveniles_5_17Years_Percent", id = "Name", zindex = 401, title = "% of residents that are juveniles(between 5-17 years)", popup.vars = c( "% that are juveniles: " = "Juveniles_5_17Years_Percent"),
+                      legend.format=list(fun=function(x) paste0(formatC(x, digits=0, format="f"), " %"))) + 
+          tm_layout(legend.format = list(fun = function(x) { paste0(formatC(x, digits = 0, format = "f"), "%") })) 
+        
+        
+        
+      }
+      
+      else if(input$choices2 == "YoungAdults_18_39Years_Percent")  {
+        
+        tm_remove_layer(401) + 
+          tm_shape(chicagomap) + 
+          tm_polygons(col = "YoungAdults_18_39Years_Percent", id = "Name", zindex = 401, title = "% of residents that are Young Adults(between 18-39 years)", popup.vars = c( "% that are young adults: " = "YoungAdults_18_39Years_Percent"),
+                      legend.format=list(fun=function(x) paste0(formatC(x, digits=0, format="f"), " %"))) + 
+          tm_layout(legend.format = list(fun = function(x) { paste0(formatC(x, digits = 0, format = "f"), "%") })) 
+        
+        
+        
+      }
+      
+      
+      else if(input$choices2 == "MiddleAgedAdults_40_64Years_Percent")  {
+        
+        tm_remove_layer(401) + 
+          tm_shape(chicagomap) + 
+          tm_polygons(col = "MiddleAgedAdults_40_64Years_Percent", id = "Name", zindex = 401, title = "% of residents that are Middlle-aged Adults(between 40-64 years)", popup.vars = c( "% that are middle aged adults: " = "MiddleAgedAdults_40_64Years_Percent"),
+                      legend.format=list(fun=function(x) paste0(formatC(x, digits=0, format="f"), " %"))) + 
+          tm_layout(legend.format = list(fun = function(x) { paste0(formatC(x, digits = 0, format = "f"), "%") })) 
+        
+        
+        
+      }
+      
+      
+      else if(input$choices2 == "Seniors_65_and_older_Percent")  {
+        
+        tm_remove_layer(401) + 
+          tm_shape(chicagomap) + 
+          tm_polygons(col = "Seniors_65_and_older_Percent", id = "Name", zindex = 401, title = "% of residents that are Senior Adults(65+ years)", popup.vars = c( "% that are senior adults: " = "Seniors_65_and_older_Percent"),
+                      legend.format=list(fun=function(x) paste0(formatC(x, digits=0, format="f"), " %"))) + 
+          tm_layout(legend.format = list(fun = function(x) { paste0(formatC(x, digits = 0, format = "f"), "%") })) 
+        
+        
+        
+      }
+      
+      
+      
+      
       
     })
+    
+    
   })
   
   
@@ -315,7 +491,7 @@ server <- function(input, output, session) {
   
   
   ### end table
-
+  
   ### last table
   
   ### table
@@ -345,7 +521,7 @@ server <- function(input, output, session) {
     df[, 24] <- paste0(as.matrix(df[,24]), '%')
     df[, 25] <- paste0(as.matrix(df[,25]), '%')
     df[, 26] <- paste0(as.matrix(df[,26]), '%')
- 
+    
     
     knitr::kable(df, 
                  col.names = c("Chicago Community Area", "region", "Total Population", "Total White", "Percent White", "Total Latino/Hispanic", "Percent Hispanic", 
@@ -374,8 +550,9 @@ server <- function(input, output, session) {
   output$bargraph <- renderPlot({
     ggplot(Asian_groups2, aes( y = `Chicago city, Illinois!!Estimate`, x = `Label (Grouping)`, fill =`Label (Grouping)`)) + 
       geom_bar(stat = "identity") + geom_text(aes(x = Asian_groups2$`Label (Grouping)`, y = Asian_groups2$`Chicago city, Illinois!!Estimate`, 
-                                                  label = scales::comma(`Chicago city, Illinois!!Estimate`)), size = 3, hjust=0 , vjust= 0 , family= "Arial") + coord_flip()  + 
+                                                  label = scales::comma(`Chicago city, Illinois!!Estimate`)), size = 5, hjust=-0.1 , vjust= 0.4 , family= "Arial") + coord_flip()  + 
       
+      scale_y_continuous(expand = c(0,0), breaks = c(20000, 40000, 60000)) +
       
       labs( x= "Asian group", 
             y= "Total Population Number in Chicago",
@@ -408,8 +585,9 @@ server <- function(input, output, session) {
   output$bargraph2 <- renderPlot({
     ggplot(AIAN_by_groups2, aes( y = `Chicago city, Illinois!!Estimate`, x = `Label (Grouping)`, fill =`Label (Grouping)`)) + 
       geom_bar(stat = "identity") + geom_text(aes(x = AIAN_by_groups2$`Label (Grouping)`, y = AIAN_by_groups2$`Chicago city, Illinois!!Estimate`, 
-                                                  label = scales::comma(`Chicago city, Illinois!!Estimate`)), size = 2.8, hjust=0 , vjust= 0 , family= "Arial") + coord_flip()  + 
+                                                  label = scales::comma(`Chicago city, Illinois!!Estimate`)), size = 4, hjust=-0.1 , vjust= 0.3 , family= "Arial") + coord_flip()  + 
       
+      scale_y_continuous(expand = c(0,0), limits=c(0,4000), breaks = c(1000, 2000, 3000)) +
       
       labs( x= "Native American group", 
             y= "Total Population Number in Chicago",
@@ -420,8 +598,8 @@ server <- function(input, output, session) {
       theme( 
         plot.title = element_text(face = "bold", size = 14),
         plot.subtitle = element_text(face = "italic", size = 14),
-        axis.title = element_text(size = 14, face = "bold"),
-        axis.text = element_text(size = 10, face = "bold"),
+        axis.title = element_text(size = 16, face = "bold"),
+        axis.text = element_text(size = 12, face = "bold"),
         axis.line = element_blank(),
         axis.ticks = element_blank(),
         legend.position = "none")
@@ -433,25 +611,25 @@ server <- function(input, output, session) {
   
   # pie chart
   
-
+  
   
   output$plot <- renderPlotly({
     
     plot_ly(type='pie', labels=labels, values=values, 
-                   textinfo='label+percent',
-                   insidetextorientation='radial')
-  
+            textinfo='label+percent',
+            insidetextorientation='radial')
+    
     
   })
   
- 
-
+  
+  
   ### end pie chart
   
   
   
   
- 
+  
   
   
   
@@ -459,8 +637,10 @@ server <- function(input, output, session) {
 
 
 
+
 # Run the application 
 shinyApp(ui = ui, server = server)
+
 
 
 
